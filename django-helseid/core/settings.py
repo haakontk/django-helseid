@@ -11,22 +11,29 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import environ
+# from authlib.jose import JsonWebKey
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# reading .env file
+# The .env file should be in the project root, alongside manage.py
+environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!9m5jo)$hs$rtnwf12za0%0)u-_$ncssk=79ebx31_tliu#1q3'
+# False if not set in os.environ
+DEBUG = env('DEBUG') 
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Raises Django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
+SECRET_KEY = env('SECRET_KEY')
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -37,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'helseid'
 ]
 
 MIDDLEWARE = [
@@ -115,3 +123,37 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+
+def get_helseid_private_key():
+    with open(BASE_DIR.parent / 'private_key.json', 'r') as f:
+        return f.read()
+
+AUTHLIB_OAUTH_CLIENTS = {
+    'helseid': {
+        'client_id': env('HELSEID_CLIENT_ID'),
+        
+        # Bruk HelseID sin Discovery URL (dette er URL for Test-miljøet)
+        'server_metadata_url': 'https://helseid-sts.test.nhn.no/.well-known/openid-configuration',
+        
+        # Konfigurasjon for Private Key JWT
+        'token_endpoint_auth_method': 'private_key_jwt',
+        'client_auth_method': 'private_key_jwt',
+        
+        # Funksjonen som returnerer din private nøkkel
+        'client_assertion_signing_key': get_helseid_private_key,
+        
+        # Algoritmen du bruker (HelseID støtter RS256)
+        'client_assertion_signing_alg': 'RS256',
+        
+        # Scopes du trenger. 'openid' og 'profile' er standard.
+        # Du må ofte ha PID eller HPR-nummer også.
+        'client_kwargs': {
+            'scope': 'openid profile helseid://scopes/identity/pid',
+            'code_challenge_method': 'S256',  # PKCE er påkrevd av HelseID
+            # For PAR (Pushed Authorization Requests) - anbefalt/påkrevd for FAPI:
+            'use_par': True, 
+        }
+    }
+}
