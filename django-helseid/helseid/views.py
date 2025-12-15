@@ -24,9 +24,11 @@ def login(request):
             "token_endpoint": "https://helseid-sts.test.nhn.no/connect/token",
         },
         client_id=settings.HELSEID_CLIENT_ID,
-        client_secret=settings.HELSEID_CLIENT_SECRET,
+        client_jwk=settings.HELSEID_CLIENT_SECRET,
     )
-    print(oauth2client)
+
+
+
     return HttpResponse("yay")
 
 

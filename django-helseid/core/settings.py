@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import json
 from pathlib import Path
 import os
 import environ
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, False)
+    DEBUG=(bool, True)
 )
 
 # reading .env file
@@ -128,7 +129,9 @@ STATIC_URL = 'static/'
 
 def get_helseid_private_key():
     with open(BASE_DIR.parent / 'private_key.json', 'r') as f:
-        return f.read()
+        text = f.read()
+        private_key_dict = json.loads(text)
+        return private_key_dict
 
 
 HELSEID_CLIENT_ID = env('HELSEID_CLIENT_ID')
