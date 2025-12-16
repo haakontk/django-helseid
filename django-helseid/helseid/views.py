@@ -24,7 +24,7 @@ def login(request):
     # client_assertion = client.auth.client_assertion(audience)
     # print(client_assertion)
     az_request = client.authorization_request(
-        scope="openid profile",
+        scope="openid",
         # client_assertion=client_assertion,
         # client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     )
