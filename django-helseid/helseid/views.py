@@ -4,8 +4,8 @@ from requests_oauth2client.exceptions import OAuth2Error
 
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.http import HttpResponse
-from django.core.cache import cache
+from django.http import HttpResponse, JsonResponse
+
 from django.conf import settings
 
 from .utils import get_helseid_client
@@ -20,31 +20,29 @@ def home(request):
 def login(request):
     client = get_helseid_client(request)
 
-    audience = client.pushed_authorization_request_endpoint
-    client_assertion = client.auth.client_assertion(audience)
-    print(client_assertion)
+    # audience = client.issuer
+    # client_assertion = client.auth.client_assertion(audience)
+    # print(client_assertion)
     az_request = client.authorization_request(
         scope="openid profile",
-        client_assertion=client_assertion,
-        client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+        # client_assertion=client_assertion,
+        # client_assertion_type="urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     )
+
     try:
         par_az_request = client.pushed_authorization_request(az_request)
         print(par_az_request.uri)
     except OAuth2Error as e:
         error_response = "No response body."
         if e.response:
-            try:
-                error_response = e.response.json()
-            except json.JSONDecodeError:
-                error_response = e.response.text
+            error_response = e.response.text
+
         print(f"Error during PAR request: {e}")
         print(f"HelseID server response: {error_response}")
 
-    return HttpResponse("yay")
+    return JsonResponse(az_request.as_dict())
 
     # return HttpResponse(par_az_request.uri)
-
 
 def auth(request):
 

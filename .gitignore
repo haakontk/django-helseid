@@ -1,6 +1,8 @@
 # custom
 .python-version
 private_key.json
+request.http
+auth_params.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
