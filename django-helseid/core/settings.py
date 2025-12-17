@@ -133,6 +133,7 @@ def get_helseid_private_key():
         private_key_dict = json.loads(text)
         return private_key_dict
 
+HELSEID_DUMMY_SERVER_METADATA_PATH = BASE_DIR.parent / 'dummy_server_metadata.json'
 
 HELSEID_CLIENT_ID = env('HELSEID_CLIENT_ID')
 HELSEID_CLIENT_SECRET = get_helseid_private_key()

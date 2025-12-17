@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+import json
+
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -51,14 +53,18 @@ def get_helseid_client(request):
     redirect_uri = request.build_absolute_uri(reverse("auth"))
 
     # Get server_metadata from cache or fetch it
-    cache_key = "helseid_server_metadata"
-    server_metadata = cache.get(cache_key)
-    if not server_metadata:
-        response = requests.get(settings.HELSEID_SERVER_METADATA_URL)
-        response.raise_for_status()
-        server_metadata = response.json()
-        # Cache for 24 hours
-        cache.set(cache_key, server_metadata, 60 * 60 * 24)
+    # cache_key = "helseid_server_metadata"
+    # server_metadata = cache.get(cache_key)
+    # if not server_metadata:
+    #     response = requests.get(settings.HELSEID_SERVER_METADATA_URL)
+    #     response.raise_for_status()
+    #     server_metadata = response.json()
+    #     # Cache for 24 hours
+    #     cache.set(cache_key, server_metadata, 60 * 60 * 24)
+
+
+    with open(settings.HELSEID_DUMMY_SERVER_METADATA_PATH) as f:
+        server_metadata = json.load(f)
 
     auth = CustomPrivateKeyJwt(
         client_id=settings.HELSEID_CLIENT_ID,
