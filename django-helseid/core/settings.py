@@ -133,29 +133,15 @@ def get_helseid_private_key():
         private_key_dict = json.loads(text)
         return private_key_dict
 
-HELSEID_DUMMY_SERVER_METADATA_PATH = BASE_DIR.parent / 'dummy_server_metadata.json'
 
-HELSEID_CLIENT_ID = env('HELSEID_CLIENT_ID')
-HELSEID_CLIENT_SECRET = get_helseid_private_key()
-HELSEID_SERVER_METADATA_URL = "https://helseid-sts.test.nhn.no/.well-known/openid-configuration"
 
-# AUTHLIB_OAUTH_CLIENTS = {
-#     'helseid': {
-#         # Konfigurasjon for Private Key JWT
-#         'token_endpoint_auth_method': 'private_key_jwt',
-#         'client_auth_method': 'private_key_jwt',
-        
-#         # Funksjonen som returnerer din private nøkkel
-#         'client_assertion_signing_key': get_helseid_private_key,
-        
-#         # Algoritmen du bruker (HelseID støtter RS256)
-#         'client_assertion_signing_alg': 'RS256',
-        
-#         # Scopes du trenger. 'openid' og 'profile' er standard.
-#         # Du må ofte ha PID eller HPR-nummer også.
-#         'client_kwargs': {
-#             'scope': 'openid profile helseid://scopes/identity/pid',
-#             'code_challenge_method': 'S256',  # PKCE er påkrevd av HelseID
-#         }
-#     }
-# }
+
+
+HELSEID = {
+    'CLIENT_ID': env('HELSEID_CLIENT_ID'),
+    'CLIENT_SECRET': get_helseid_private_key(),
+    'SCOPE': ['openid', 'profile', 'helseid://scopes/hpr/hpr_number', 'helseid://scopes/identity/security_level'],
+    'DUMMY_SERVER_METADATA_PATH': BASE_DIR.parent / 'dummy_server_metadata.json',
+    'SERVER_METADATA_URL': "https://helseid-sts.test.nhn.no/.well-known/openid-configuration",
+    'USE_DUMMY_SERVER_METADATA': False
+}

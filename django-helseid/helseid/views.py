@@ -1,14 +1,13 @@
 import json
 from requests_oauth2client.exceptions import OAuth2Error
 
+from django.conf import settings
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 from .utils import get_helseid_client
-
-USE_DUMMY_SERVER_METADATA = False
 
 
 def home(request):
@@ -21,11 +20,12 @@ def home(request):
 
 def login(request):
     client = get_helseid_client(
-        request, use_dummy_server_metadata=USE_DUMMY_SERVER_METADATA
+        request
     )
+    scope = " ".join(settings.HELSEID["SCOPE"])
 
     az_request = client.authorization_request(
-        scope="openid profile helseid://scopes/hpr/hpr_number helseid://scopes/identity/security_level",
+        scope=scope,
     )
 
     # Store state, nonce and code_verifier in session to validate callback later
@@ -47,7 +47,7 @@ def login(request):
 
 def auth(request):
     client = get_helseid_client(
-        request, use_dummy_server_metadata=USE_DUMMY_SERVER_METADATA
+        request
     )
 
     state = request.session.get("helseid_state")
@@ -67,8 +67,13 @@ def auth(request):
     token = client.authorization_code(
         az_response,
     )
+
     for key, value in token.as_dict().items():
         print(key, value)
+
+    id_token = token.id_token
+    print("Subject: ", id_token.subject)
+    print("Subject: ", id_token.subject)
 
     return HttpResponse(f"Good so far", status=200)
     token_response = client.authorization_code_token_request(
