@@ -73,8 +73,13 @@ def get_helseid_client(request, use_dummy_server_metadata=False):
         private_jwk=settings.HELSEID_CLIENT_SECRET,
         lifetime=10
     )
-    return OAuth2Client.from_discovery_document(
+    client = OAuth2Client.from_discovery_document(
         discovery=server_metadata,
         redirect_uri=redirect_uri,
         auth=auth
     )
+
+    # Set public keys
+    client.update_authorization_server_public_keys()
+    assert client.authorization_server_jwks, "client.authorization_server_jwks must not be empty"
+    return client
