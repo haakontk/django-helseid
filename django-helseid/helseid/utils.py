@@ -44,7 +44,7 @@ class CustomPrivateKeyJwt(PrivateKeyJwt):
     
 
 
-def get_helseid_client(request):
+def get_helseid_client(request, use_dummy_server_metadata=False):
     """
     Initializes and returns an OAuth2Client for HelseID.
     It caches the server metadata to avoid fetching it on every request.
@@ -52,19 +52,21 @@ def get_helseid_client(request):
     # Build the absolute redirect URI for the auth callback
     redirect_uri = request.build_absolute_uri(reverse("auth"))
 
-    # Get server_metadata from cache or fetch it
-    # cache_key = "helseid_server_metadata"
-    # server_metadata = cache.get(cache_key)
-    # if not server_metadata:
-    #     response = requests.get(settings.HELSEID_SERVER_METADATA_URL)
-    #     response.raise_for_status()
-    #     server_metadata = response.json()
-    #     # Cache for 24 hours
-    #     cache.set(cache_key, server_metadata, 60 * 60 * 24)
 
 
-    with open(settings.HELSEID_DUMMY_SERVER_METADATA_PATH) as f:
-        server_metadata = json.load(f)
+    if use_dummy_server_metadata:
+        with open(settings.HELSEID_DUMMY_SERVER_METADATA_PATH) as f:
+            server_metadata = json.load(f)
+    else:
+        # Get server_metadata from cache or fetch it
+        cache_key = "helseid_server_metadata"
+        server_metadata = cache.get(cache_key)
+        if not server_metadata:
+            response = requests.get(settings.HELSEID_SERVER_METADATA_URL)
+            response.raise_for_status()
+            server_metadata = response.json()
+            # Cache for 24 hours
+            cache.set(cache_key, server_metadata, 60 * 60 * 24)
 
     auth = CustomPrivateKeyJwt(
         client_id=settings.HELSEID_CLIENT_ID,
