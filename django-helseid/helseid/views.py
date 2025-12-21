@@ -25,7 +25,7 @@ def login(request):
     )
 
     az_request = client.authorization_request(
-        scope="openid",
+        scope="openid profile helseid://scopes/hpr/hpr_number helseid://scopes/identity/security_level",
     )
 
     # Store state, nonce and code_verifier in session to validate callback later
@@ -63,11 +63,12 @@ def auth(request):
 
     az_response = az_request.validate_callback(request.build_absolute_uri())
 
-    print(az_response)
+    # print(az_response)
     token = client.authorization_code(
         az_response,
     )
-    print(token)
+    for key, value in token.as_dict().items():
+        print(key, value)
 
     return HttpResponse(f"Good so far", status=200)
     token_response = client.authorization_code_token_request(
