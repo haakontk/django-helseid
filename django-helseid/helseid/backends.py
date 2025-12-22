@@ -9,10 +9,6 @@ class HelseIDBackend(BaseBackend):
             return None
 
         subject = id_token_payload.subject
-        given_name = id_token_payload.get_claim("given_name")
-        family_name = id_token_payload.get_claim("family_name")
-        middle_name = id_token_payload.get_claim("middle_name")
-        hpr_number = id_token_payload.get_claim("helseid://scopes/hpr/hpr_number")
         
         try:
             # Look up the profile connecting HelseID to a Django get_user_model()
@@ -21,8 +17,15 @@ class HelseIDBackend(BaseBackend):
         except HelseIDProfile.DoesNotExist:
             # Auto-create user if they don't exist
             # You can extract email/name from id_token claims if present
-            username = f"subject"
-            first_name = given_name + " " + middle_name
+            given_name = id_token_payload.get_claim("given_name")
+            family_name = id_token_payload.get_claim("family_name")
+            middle_name = id_token_payload.get_claim("middle_name")
+            hpr_number = id_token_payload.get_claim("helseid://claims/hpr/hpr_number")
+            username = subject
+            if middle_name:
+                first_name = given_name + " " + middle_name
+            else:
+                first_name = given_name
             user = get_user_model().objects.create_user(username=username, first_name=first_name, last_name=family_name)
             
             HelseIDProfile.objects.create(

@@ -26,6 +26,7 @@ def login(request):
 
     az_request = client.authorization_request(
         scope=scope,
+        # prompt='login',
     )
 
     # Store state, nonce and code_verifier in session to validate callback later
@@ -66,12 +67,30 @@ def auth(request):
     token = client.authorization_code(
         az_response,
     )
-    
+
     id_token = token.id_token
+
+    # NEXT: VERIFY ID_TOKEN
+    subject = id_token.subject
     auth_datetime = id_token.auth_datetime
-    print(auth_datetime)
+    given_name = id_token.get_claim("given_name")
+    family_name = id_token.get_claim("family_name")
+    middle_name = id_token.get_claim("middle_name")
+    hpr_number = id_token.get_claim("helseid://claims/hpr/hpr_number")
+
+    print(f"Subject: {subject}")
+    print(f"Given Name: {given_name}")
+    print(f"Family Name: {family_name}")
+    print(f"Middle Name: {middle_name}")
+    print(f"HPR Number: {hpr_number}")
+    print(f"Auth Datetime: {auth_datetime}")
+
+
 
     user = authenticate(request, id_token_payload=id_token)
+    print(user)
+    return HttpResponse("All good .", status=200)
+
 
     if user:
         django_login(request, user)
