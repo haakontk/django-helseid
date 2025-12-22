@@ -6,7 +6,8 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
+from django.contrib.auth import authenticate, login as django_login
+import datetime
 from .utils import get_helseid_client
 
 
@@ -14,7 +15,6 @@ def home(request):
     user = request.session.get("user")
     if user:
         user = json.dumps(user)
-    print(f"Current session data: {dict(request.session)}")
     return render(request, "helseid/home.html", context={"user": user})
 
 
@@ -63,31 +63,31 @@ def auth(request):
 
     az_response = az_request.validate_callback(request.build_absolute_uri())
 
-    # print(az_response)
     token = client.authorization_code(
         az_response,
     )
-
-    for key, value in token.as_dict().items():
-        print(key, value)
-
+    
     id_token = token.id_token
-    print("Subject: ", id_token.subject)
-    print("Subject: ", id_token.subject)
+    auth_datetime = id_token.auth_datetime
+    print(auth_datetime)
 
-    return HttpResponse(f"Good so far", status=200)
-    token_response = client.authorization_code_token_request(
-        az_response.code, code_verifier=code_verifier
-    )
+    user = authenticate(request, id_token_payload=id_token)
 
-    request.session["user"] = token_response.id_token_claims
+    if user:
+        django_login(request, user)
+        # Set session expiry to 2 hours from auth_datetime
+        session_expiry = auth_datetime + datetime.timedelta(hours=2)
+        request.session.set_expiry(session_expiry)
 
-    # Clean up temporary authentication data
-    del request.session["helseid_state"]
-    del request.session["helseid_nonce"]
-    del request.session["helseid_code_verifier"]
+        # Clean up temporary authentication data
+        del request.session["helseid_state"]
+        del request.session["helseid_nonce"]
+        del request.session["helseid_code_verifier"]
 
-    return redirect("home")
+        return redirect("home")
+    else:
+        return HttpResponse("Authentication failed.", status=403)
+
 
 
 @csrf_exempt
