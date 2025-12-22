@@ -89,7 +89,6 @@ def auth(request):
 
     user = authenticate(request, id_token_payload=id_token)
     print(user)
-    return HttpResponse("All good .", status=200)
 
 
     if user:
