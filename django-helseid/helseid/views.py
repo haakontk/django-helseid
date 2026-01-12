@@ -1,4 +1,5 @@
 import json
+import logging
 from requests_oauth2client.exceptions import OAuth2Error
 
 from django.conf import settings
@@ -9,6 +10,8 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as django_login
 import datetime
 from .utils import get_helseid_client
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -41,8 +44,8 @@ def login(request):
         if e.response is not None:
             error_response = e.response.text
 
-        print(f"Error during PAR request: {e}")
-        print(f"HelseID server response: {error_response}")
+        logger.error(f"Error during PAR request: {e}")
+        logger.error(f"HelseID server response: {error_response}")
         return HttpResponse("Failed to initiate login.", status=500)
 
 
@@ -78,17 +81,17 @@ def auth(request):
     middle_name = id_token.get_claim("middle_name")
     hpr_number = id_token.get_claim("helseid://claims/hpr/hpr_number")
 
-    print(f"Subject: {subject}")
-    print(f"Given Name: {given_name}")
-    print(f"Family Name: {family_name}")
-    print(f"Middle Name: {middle_name}")
-    print(f"HPR Number: {hpr_number}")
-    print(f"Auth Datetime: {auth_datetime}")
+    logger.debug(f"Subject: {subject}")
+    logger.debug(f"Given Name: {given_name}")
+    logger.debug(f"Family Name: {family_name}")
+    logger.debug(f"Middle Name: {middle_name}")
+    logger.debug(f"HPR Number: {hpr_number}")
+    logger.debug(f"Auth Datetime: {auth_datetime}")
 
 
 
     user = authenticate(request, id_token_payload=id_token)
-    print(user)
+    logger.debug(f"Authenticated user: {user}")
 
 
     if user:
@@ -112,20 +115,20 @@ def auth(request):
 def dummy_token_endpoint(request):
     from urllib.parse import parse_qs
 
-    print("--- DUMMY TOKEN ENDPOINT HIT ---")
-    print(f"Request Method: {request.method}")
-    print("Request Headers:")
+    logger.debug("--- DUMMY TOKEN ENDPOINT HIT ---")
+    logger.debug(f"Request Method: {request.method}")
+    logger.debug("Request Headers:")
     for header, value in request.headers.items():
-        print(f"  {header}: {value}")
-    print("Request Body:")
-    # print(request.body.decode('utf-8'))
+        logger.debug(f"  {header}: {value}")
+    logger.debug("Request Body:")
+    # logger.debug(request.body.decode('utf-8'))
 
     # TODO
     # Verify that keys are the same as stated in https://utviklerportal.nhn.no/informasjonstjenester/helseid/bruksmoenstre-og-eksempelkode/bruk-av-helseid/docs/teknisk-referanse/endepunkt/token-endepunktet_no_nbmd
     for key, value in parse_qs(request.body.decode("utf-8")).items():
-        print(key, value)
+        logger.debug(f"{key}: {value}")
 
-    print("--- END DUMMY TOKEN ENDPOINT ---")
+    logger.debug("--- END DUMMY TOKEN ENDPOINT ---")
 
     response_data = {
         "identity_token": "123",
