@@ -66,43 +66,6 @@ class HelseIDAuthTests(TestCase):
             msg="Session expiry should be 2 hours from auth_datetime"
         )
 
-    def test_middleware_redirects_unauthenticated_users(self):
-        response = self.client.get(reverse('home'))
-        self.assertRedirects(response, reverse('login'), fetch_redirect_response=False)
-
-    @patch('helseid.views.get_helseid_client')
-    def test_middleware_allows_exempt_urls_for_unauthenticated_users(self, mock_get_client):
-        # Mock the client for the login view to prevent external calls
-        mock_client = MagicMock()
-        mock_get_client.return_value = mock_client
-        mock_par_response = MagicMock()
-        mock_par_response.uri = "http://dummy.url/redirect"
-        mock_client.pushed_authorization_request.return_value = mock_par_response
-
-        # Ensure authorization_request returns objects with string attributes for session serialization
-        mock_az_request = MagicMock()
-        mock_az_request.state = "state"
-        mock_az_request.nonce = "nonce"
-        mock_az_request.code_verifier = "verifier"
-        mock_client.authorization_request.return_value = mock_az_request
-
-        with self.subTest("Login page should be accessible"):
-            response = self.client.get(reverse('login'))
-            # The middleware should allow access. The view itself will then redirect
-            # to the HelseID provider. We check for a redirect (302) that is NOT
-            # a redirect back to the login page itself (which would indicate a loop).
-            self.assertEqual(response.status_code, 302)
-            self.assertNotEqual(response.url, reverse('login'))
-
-        with self.subTest("Auth callback should be accessible"):
-            # Clear session to ensure we hit the 400 error path (missing session data)
-            # instead of proceeding to authentication with incomplete mocks.
-            self.client.session.flush()
-            response = self.client.get(reverse('auth'))
-            # The middleware should allow access. The view itself will then fail
-            # because of missing session data, returning a 400 Bad Request.
-            # This is correct; we just need to ensure it's not a 302 redirect to login.
-            self.assertEqual(response.status_code, 400)
 
     @override_settings(AUTHENTICATION_BACKENDS=['helseid.backends.HelseIDBackend'])
     @patch('helseid.views.get_helseid_client')

@@ -10,8 +10,13 @@ readme = "README.md"
 requires-python = ">=3.14"
 license = {text = "MIT"}
 classifiers = [
-    "Framework :: Django",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "License :: OSI Approved :: MIT License",
+    "Framework :: Django :: 6.0",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "django>=6.0",
@@ -25,3 +30,8 @@ packages = ["helseid"]
 
 [tool.setuptools.package-data]
 helseid = ["templates/**/*.html", "static/**/*"]
+
+[dependency-groups]
+dev = [
+    "django-environ>=0.12.0",
+]
