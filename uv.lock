@@ -170,21 +170,12 @@ wheels = [
 ]
 
 [[package]]
-name = "django-environ"
-version = "0.12.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d6/04/65d2521842c42f4716225f20d8443a50804920606aec018188bbee30a6b0/django_environ-0.12.0.tar.gz", hash = "sha256:227dc891453dd5bde769c3449cf4a74b6f2ee8f7ab2361c93a07068f4179041a", size = 56804, upload-time = "2025-01-13T17:03:37.74Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/b3/0a3bec4ecbfee960f39b1842c2f91e4754251e0a6ed443db9fe3f666ba8f/django_environ-0.12.0-py2.py3-none-any.whl", hash = "sha256:92fb346a158abda07ffe6eb23135ce92843af06ecf8753f43adf9d2366dcc0ca", size = 19957, upload-time = "2025-01-13T17:03:32.918Z" },
-]
-
-[[package]]
 name = "django-helseid"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "django" },
-    { name = "django-environ" },
+    { name = "jwskate" },
     { name = "requests" },
     { name = "requests-oauth2client" },
 ]
@@ -192,9 +183,9 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=6.0" },
-    { name = "django-environ", specifier = ">=0.12.0" },
+    { name = "jwskate", specifier = ">=0.12.2" },
     { name = "requests", specifier = ">=2.32.5" },
-    { name = "requests-oauth2client", specifier = ">=1.7.0" },
+    { name = "requests-oauth2client", specifier = ">=1.8.0" },
 ]
 
 [[package]]
@@ -271,7 +262,7 @@ wheels = [
 
 [[package]]
 name = "requests-oauth2client"
-version = "1.7.0"
+version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -280,9 +271,9 @@ dependencies = [
     { name = "jwskate" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/51/e56736203751d5fea1f15503461582fdc04e1bcb62378a9c1db94b9de8b2/requests_oauth2client-1.7.0.tar.gz", hash = "sha256:535d7283c86545366362549a64306dfefd76ee6523ec38a7a0c6bc5081ffe21d", size = 124871, upload-time = "2025-03-28T13:12:11.941Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/13/7f/b3084153443ed7b568854b6a6b0d66971b8f25354ec73f2694a85823d8a2/requests_oauth2client-1.8.0.tar.gz", hash = "sha256:a550f18c41bae5082548257b8a4cd453da6315552f451fc81352c2aaa79b89b3", size = 131048, upload-time = "2025-12-22T20:22:03.335Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/35/a764710a54fc8a3320329fb09df5a97a34cc298e0ae70226ea413ba8f0f0/requests_oauth2client-1.7.0-py3-none-any.whl", hash = "sha256:6a220afdef5b4b6b26dd3fe714ba0e8d06ae99102c4038fbedddecf1fca61454", size = 80694, upload-time = "2025-03-28T13:12:10.728Z" },
+    { url = "https://files.pythonhosted.org/packages/69/6d/18a6d7354924d5b9b71cbb6c247784c9eccf0f9f76c83c4e44bc891157bc/requests_oauth2client-1.8.0-py3-none-any.whl", hash = "sha256:afff45c7dcabe3d7762bcc3e25c002b3645cee6f3ce99776dff54c1f6048b83d", size = 85061, upload-time = "2025-12-22T20:22:01.828Z" },
 ]
 
 [[package]]
