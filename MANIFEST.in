@@ -1,4 +1,3 @@
 include LICENSE
 include README.md
-recursive-include django-helseid/helseid/templates *
-recursive-include django-helseid/helseid/static *
+recursive-include src/django_helseid/templates *

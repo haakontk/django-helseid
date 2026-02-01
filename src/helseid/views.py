@@ -5,8 +5,6 @@ from requests_oauth2client.exceptions import OAuth2Error
 from django.conf import settings
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as django_login
 import datetime
 from .utils import get_helseid_client
@@ -29,7 +27,7 @@ def login(request):
 
     az_request = client.authorization_request(
         scope=scope,
-        # prompt='login',
+        prompt='login',
     )
 
     # Store state, nonce and code_verifier in session to validate callback later
@@ -105,36 +103,6 @@ def auth(request):
         del request.session["helseid_nonce"]
         del request.session["helseid_code_verifier"]
 
-        return redirect("home")
+        return redirect(getattr(settings, "LOGIN_REDIRECT_URL", "/"))
     else:
         return HttpResponse("Authentication failed.", status=403)
-
-
-
-@csrf_exempt
-def dummy_token_endpoint(request):
-    from urllib.parse import parse_qs
-
-    logger.debug("--- DUMMY TOKEN ENDPOINT HIT ---")
-    logger.debug(f"Request Method: {request.method}")
-    logger.debug("Request Headers:")
-    for header, value in request.headers.items():
-        logger.debug(f"  {header}: {value}")
-    logger.debug("Request Body:")
-    # logger.debug(request.body.decode('utf-8'))
-
-    # TODO
-    # Verify that keys are the same as stated in https://utviklerportal.nhn.no/informasjonstjenester/helseid/bruksmoenstre-og-eksempelkode/bruk-av-helseid/docs/teknisk-referanse/endepunkt/token-endepunktet_no_nbmd
-    for key, value in parse_qs(request.body.decode("utf-8")).items():
-        logger.debug(f"{key}: {value}")
-
-    logger.debug("--- END DUMMY TOKEN ENDPOINT ---")
-
-    response_data = {
-        "identity_token": "123",
-        "refresh_token": "123",
-        "rt_expires_in": 123,
-        "scope": "openid",
-        "rejected_scope": "",
-    }
-    return JsonResponse(response_data, status=201)
