@@ -1,6 +1,6 @@
 [project]
 name = "django-helseid"
-version = "0.1.0"
+version = "1.0.0"
 description = "A Django app for HelseID authentication."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -19,13 +19,6 @@ dependencies = [
     "requests>=2.32.5",
     "requests-oauth2client>=1.8.0",
 ]
-
-[tool.setuptools]
-package-dir = {"" = "django-helseid"}
-packages = ["helseid"]
-
-[tool.setuptools.package-data]
-helseid = ["templates/**/*.html", "static/**/*"]
 
 [dependency-groups]
 dev = [
@@ -49,4 +42,4 @@ exclude = [
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/django_helseid"]
+packages = ["src/helseid"]
