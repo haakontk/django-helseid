@@ -1,0 +1,46 @@
+[project]
+name = "django-helseid"
+version = "1.0.0"
+description = "A Django app for HelseID authentication."
+readme = "README.md"
+requires-python = ">=3.14"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "License :: OSI Approved :: MIT License",
+    "Framework :: Django :: 6.0",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "django>=6.0",
+    "requests>=2.32.5",
+    "requests-oauth2client>=1.8.0",
+]
+
+[dependency-groups]
+dev = [
+    "django-environ>=0.12.0",
+    "hatchling>=1.28.0",
+    "twine>=6.2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+    "/src/core",
+    "manage.py",
+    "/docs",
+    "/tests",
+    "tests/",        # Alternatively, a trailing slash ensures only directories are matched
+    "*.pyc",         # Exclude files matching a pattern
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/helseid"]
