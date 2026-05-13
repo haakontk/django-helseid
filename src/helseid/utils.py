@@ -74,7 +74,8 @@ def get_helseid_client(request):
     client = OAuth2Client.from_discovery_document(
         discovery=server_metadata,
         redirect_uri=redirect_uri,
-        auth=auth
+        auth=auth,
+        dpop_bound_access_tokens=True, 
     )
 
     # Fetch public keys from NHN

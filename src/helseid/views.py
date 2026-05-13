@@ -1,6 +1,7 @@
 import json
 import logging
 from requests_oauth2client.exceptions import OAuth2Error
+from requests_oauth2client.dpop import DPoPKey
 
 from django.conf import settings
 from django.shortcuts import redirect, render
@@ -30,6 +31,10 @@ def login(request):
         prompt='login',
     )
 
+    # Save DPoP key to session — must reuse the same key at the token endpoint
+    if az_request.dpop_key:
+        request.session["helseid_dpop_key"] = az_request.dpop_key.private_key.to_dict()
+
     # Store state, nonce and code_verifier in session to validate callback later
     request.session["helseid_state"] = az_request.state
     request.session["helseid_nonce"] = az_request.nonce
@@ -56,17 +61,25 @@ def auth(request):
     nonce = request.session.get("helseid_nonce")
     code_verifier = request.session.get("helseid_code_verifier")
 
-    if not state or not nonce or not code_verifier:
+    dpop_key = None
+    dpop_key_dict = request.session.get("helseid_dpop_key")
+    if dpop_key_dict:
+        dpop_key = DPoPKey(private_key=dpop_key_dict)  # reconstruct from JWK dict
+
+    print(dpop_key)
+
+    if not state or not nonce or not code_verifier or not dpop_key:
         return HttpResponse("Missing authentication session data.", status=400)
 
     az_request = client.authorization_request(
-        scope="openid", state=state, nonce=nonce, code_verifier=code_verifier
+        scope="openid", state=state, nonce=nonce, code_verifier=code_verifier, dpop_key=dpop_key,
     )
 
     az_response = az_request.validate_callback(request.build_absolute_uri())
 
     token = client.authorization_code(
         az_response,
+        dpop_key=dpop_key,   
     )
 
     id_token = token.id_token
