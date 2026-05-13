@@ -139,7 +139,7 @@ def get_helseid_private_key():
 
 
 
-
+LOGIN_REDIRECT_URL = "/"
 
 HELSEID = {
     'CLIENT_ID': env('HELSEID_CLIENT_ID'),

@@ -4,6 +4,10 @@ Django application for authenticating users with HelseID
 
 ## Installation
 
+**⚠️ WARNING: This project is currently under development and is NOT production-ready. It is intended for demonstration and testing purposes only. Do not use in a production environment without thorough security review and further development. ⚠️**
+
+
+
 1. Install the package:
    ```bash
    pip install django-helseid
