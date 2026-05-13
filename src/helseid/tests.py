@@ -12,6 +12,14 @@ class HelseIDAuthTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = get_user_model().objects.create_user(username='testuser')
+        self.dpop_key_dict = {
+            'kty': 'EC',
+            'crv': 'P-256',
+            'x': 'V2YY4UJO2SAhehNmAjU2tKmzzL5msWBw1pFXxMALU1E',
+            'y': '0YCPJbMbrzI9pJzdbgIfzeLZnVl88AJmnaXjDJI-fp0',
+            'd': 'mo6HyZ1JmX6BmqfnfqiQhdRKN5z9X45q5RyNmKEciCk',
+            'alg': 'ES256'
+        }
 
     @override_settings(LOGIN_REDIRECT_URL='/')
     @patch('helseid.views.get_helseid_client')
@@ -48,6 +56,7 @@ class HelseIDAuthTests(TestCase):
         session['helseid_state'] = 'state'
         session['helseid_nonce'] = 'nonce'
         session['helseid_code_verifier'] = 'verifier'
+        session['helseid_dpop_key'] = self.dpop_key_dict
         session.save()
 
         # Perform request
@@ -56,7 +65,12 @@ class HelseIDAuthTests(TestCase):
 
         # Assert redirect to home
         self.assertRedirects(response, reverse('home'))
-        
+
+        # Verify authorization_code was called with validate=False and the dpop_key
+        mock_client.authorization_code.assert_called_once()
+        _, kwargs = mock_client.authorization_code.call_args
+        self.assertFalse(kwargs.get('validate'), "Validation should be disabled to bypass library bug")
+
         # Verify session expiry
         expected_expiry = auth_time + timedelta(hours=2)
         actual_expiry = self.client.session.get_expiry_date()
@@ -107,6 +121,7 @@ class HelseIDAuthTests(TestCase):
         session['helseid_state'] = 'state'
         session['helseid_nonce'] = 'nonce'
         session['helseid_code_verifier'] = 'verifier'
+        session['helseid_dpop_key'] = self.dpop_key_dict
         session.save()
 
         # Perform request
@@ -162,6 +177,7 @@ class HelseIDAuthTests(TestCase):
         session['helseid_state'] = 'state'
         session['helseid_nonce'] = 'nonce'
         session['helseid_code_verifier'] = 'verifier'
+        session['helseid_dpop_key'] = self.dpop_key_dict
         session.save()
 
         # Perform request
@@ -170,6 +186,15 @@ class HelseIDAuthTests(TestCase):
 
         # Assert redirect to custom URL
         self.assertRedirects(response, '/custom/dashboard/', fetch_redirect_response=False)
+
+    def test_logout_view_clears_session(self):
+        self.client.force_login(self.user)
+        self.assertIn('_auth_user_id', self.client.session)
+        
+        response = self.client.get(reverse('logout'))
+        
+        self.assertRedirects(response, reverse('home'))
+        self.assertNotIn('_auth_user_id', self.client.session)
 
 class HelseIDSystemCheckTests(TestCase):
     @override_settings(AUTHENTICATION_BACKENDS=['django.contrib.auth.backends.ModelBackend'])

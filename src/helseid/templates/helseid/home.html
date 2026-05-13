@@ -1,5 +1,5 @@
-{% if user %}
-  <pre>{{ user }}</pre>
+{% if user.is_authenticated %}
+  <p>Logged in as: <strong>{{ user.username }}</strong></p>
   <hr />
   <a href="/logout/">logout</a>
 {% else %}
