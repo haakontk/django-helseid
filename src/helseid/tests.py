@@ -190,11 +190,17 @@ class HelseIDAuthTests(TestCase):
     def test_logout_view_clears_session(self):
         self.client.force_login(self.user)
         self.assertIn('_auth_user_id', self.client.session)
-        
-        response = self.client.get(reverse('logout'))
-        
+
+        response = self.client.post(reverse('logout'))
+
         self.assertRedirects(response, reverse('home'))
         self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_logout_rejects_get(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('logout'))
+        self.assertEqual(response.status_code, 405)
+        self.assertIn('_auth_user_id', self.client.session)
 
 class HelseIDSystemCheckTests(TestCase):
     @override_settings(AUTHENTICATION_BACKENDS=['django.contrib.auth.backends.ModelBackend'])
