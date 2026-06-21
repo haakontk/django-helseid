@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from .models import HelseIDProfile
 from .checks import check_helseid_settings
+from .utils import CustomPrivateKeyJwt
 
 # Create your tests here.
 
@@ -271,3 +272,22 @@ class HelseIDSystemCheckTests(TestCase):
     def test_login_redirect_url_warning_not_present_when_set(self):
         errors = check_helseid_settings(None)
         self.assertFalse(any(e.id == 'helseid.W001' for e in errors))
+
+
+class CustomPrivateKeyJwtTests(TestCase):
+    JWK = {
+        'kty': 'EC', 'crv': 'P-256', 'alg': 'ES256', 'kid': 'test-key-1',
+        'x': 'V2YY4UJO2SAhehNmAjU2tKmzzL5msWBw1pFXxMALU1E',
+        'y': '0YCPJbMbrzI9pJzdbgIfzeLZnVl88AJmnaXjDJI-fp0',
+        'd': 'mo6HyZ1JmX6BmqfnfqiQhdRKN5z9X45q5RyNmKEciCk',
+    }
+
+    def test_instantiation_sets_sts_url(self):
+        sts_url = 'https://helseid-sts.test.nhn.no'
+        auth = CustomPrivateKeyJwt(
+            client_id='test-client',
+            private_jwk=self.JWK,
+            lifetime=10,
+            sts_url=sts_url,
+        )
+        self.assertEqual(auth.sts_url, sts_url)

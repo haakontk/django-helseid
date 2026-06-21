@@ -33,7 +33,7 @@ class CustomPrivateKeyJwt(PrivateKeyJwt):
 
     def __init__(self, *args, sts_url: str, **kwargs):
         super().__init__(*args, **kwargs)
-        self.sts_url = sts_url
+        object.__setattr__(self, 'sts_url', sts_url)
 
     def client_assertion(self, audience: str) -> str:
         """Generate a Client Assertion, asymmetrically signed with `private_jwk` as key.
