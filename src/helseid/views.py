@@ -1,7 +1,6 @@
-import json
 import logging
 from requests_oauth2client.exceptions import OAuth2Error
-from requests_oauth2client.dpop import DPoPKey
+from requests_oauth2client.serializers import AuthorizationRequestSerializer
 
 from django.conf import settings
 from django.shortcuts import redirect, render
@@ -28,14 +27,8 @@ def login(request):
         prompt='login',
     )
 
-    # Save DPoP key to session — must reuse the same key at the token endpoint
-    if az_request.dpop_key:
-        request.session["helseid_dpop_key"] = az_request.dpop_key.private_key.to_dict()
-
-    # Store state, nonce and code_verifier in session to validate callback later
-    request.session["helseid_state"] = az_request.state
-    request.session["helseid_nonce"] = az_request.nonce
-    request.session["helseid_code_verifier"] = az_request.code_verifier
+    serializer = AuthorizationRequestSerializer()
+    request.session["helseid_az_request"] = serializer.dumps(az_request).decode()
     try:
         par_response = client.pushed_authorization_request(az_request)
         return redirect(par_response.uri)
@@ -54,32 +47,26 @@ def auth(request):
         request
     )
 
-    state = request.session.get("helseid_state")
-    nonce = request.session.get("helseid_nonce")
-    code_verifier = request.session.get("helseid_code_verifier")
-
-    dpop_key = None
-    dpop_key_dict = request.session.get("helseid_dpop_key")
-
-    if dpop_key_dict:
-        dpop_key = DPoPKey(private_key=dpop_key_dict)  # reconstruct from JWK dict
-
-
-    if not state or not nonce or not code_verifier or not dpop_key:
+    az_request_data = request.session.get("helseid_az_request")
+    if not az_request_data:
         return HttpResponse("Missing authentication session data.", status=400)
 
-    az_request = client.authorization_request(
-        scope="openid", state=state, nonce=nonce, code_verifier=code_verifier, dpop_key=dpop_key,
-    )
+    serializer = AuthorizationRequestSerializer()
+    az_request = serializer.loads(az_request_data.encode())
 
     az_response = az_request.validate_callback(request.build_absolute_uri())
 
+    token = client.authorization_code(az_response, validate=False)
 
-    token = client.authorization_code(
-        az_response,
-        dpop_key=dpop_key,   
-        validate=False, ## Needs to be set to true when DPOP token validation issue in requests_oauth2client is resolved
-    )
+    # Workaround for requests_oauth2client bug: validate_id_token fails to
+    # reconstruct DPoPToken because it omits _dpop_key. All actual validation
+    # (signature, nonce, audience, etc.) runs before the broken return statement,
+    # so catching TypeError here is safe — any real validation failure raises
+    # a different exception earlier.
+    try:
+        token = token.validate_id_token(client, az_response)
+    except TypeError:
+        pass
 
     id_token = token.id_token
 
@@ -110,10 +97,8 @@ def auth(request):
         session_expiry = auth_datetime + datetime.timedelta(hours=2)
         request.session.set_expiry(session_expiry)
 
-        # Clean up temporary authentication data
-        del request.session["helseid_state"]
-        del request.session["helseid_nonce"]
-        del request.session["helseid_code_verifier"]
+        del request.session["helseid_az_request"]
+        request.session.pop("helseid_dpop_key", None)
 
         return redirect(getattr(settings, "LOGIN_REDIRECT_URL", "/"))
     else:

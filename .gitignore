@@ -3,6 +3,7 @@
 private_key.json
 request.http
 auth_params.json
+CLAUDE.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
