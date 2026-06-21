@@ -3,8 +3,12 @@ name = "django-helseid"
 version = "1.0.2"
 description = "A Django app for HelseID authentication."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 license = {text = "MIT"}
+authors = [
+    { name = "Håkon Kiær", email = "haakonkiaer@gmail.com" }
+]
+keywords = ["django", "helseid", "openid-connect", "oauth2", "norwegian-health", "authentication"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -12,6 +16,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Framework :: Django :: 6.0",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
@@ -20,16 +26,34 @@ dependencies = [
     "requests-oauth2client>=1.8.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/haakontk/django-helseid"
+Source = "https://github.com/haakontk/django-helseid"
+"Bug Tracker" = "https://github.com/haakontk/django-helseid/issues"
+Changelog = "https://github.com/haakontk/django-helseid/blob/main/CHANGELOG.md"
+
 [dependency-groups]
 dev = [
+    "coverage[toml]>=7.0",
     "django-environ>=0.12.0",
     "hatchling>=1.28.0",
+    "ruff>=0.9",
     "twine>=6.2.0",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+src = ["src"]
+
+[tool.coverage.run]
+source = ["helseid"]
+omit = ["*/tests*", "*/migrations*"]
+
+[tool.coverage.report]
+fail_under = 80
 
 [tool.hatch.build]
 exclude = [
