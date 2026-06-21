@@ -216,19 +216,40 @@ class HelseIDSystemCheckTests(TestCase):
     @override_settings(HELSEID={})
     def test_helseid_missing_required_keys(self):
         errors = check_helseid_settings(None)
-        required_keys = ['CLIENT_ID', 'CLIENT_SECRET', 'SCOPE', 'SERVER_METADATA_URL']
-        for key in required_keys:
+        for key in ['CLIENT_ID', 'CLIENT_SECRET', 'SCOPE']:
             self.assertTrue(any(e.id == f'helseid.E002_{key}' for e in errors))
+        # Missing both ENVIRONMENT and SERVER_METADATA_URL triggers E002_SERVER_METADATA_URL
+        self.assertTrue(any(e.id == 'helseid.E002_SERVER_METADATA_URL' for e in errors))
 
     @override_settings(HELSEID={
         'CLIENT_ID': 'test_id',
         'CLIENT_SECRET': 'test_secret',
         'SCOPE': 'test_scope',
-        'SERVER_METADATA_URL': 'https://test.url'
+        'ENVIRONMENT': 'test',
     })
     def test_helseid_all_required_keys_present(self):
         errors = check_helseid_settings(None)
         self.assertFalse(any(e.id.startswith('helseid.E002') for e in errors))
+
+    @override_settings(HELSEID={
+        'CLIENT_ID': 'test_id',
+        'CLIENT_SECRET': 'test_secret',
+        'SCOPE': 'test_scope',
+        'SERVER_METADATA_URL': 'https://custom.example.com/.well-known/openid-configuration',
+    })
+    def test_helseid_server_metadata_url_still_accepted(self):
+        errors = check_helseid_settings(None)
+        self.assertFalse(any(e.id.startswith('helseid.E002') for e in errors))
+
+    @override_settings(HELSEID={
+        'CLIENT_ID': 'test_id',
+        'CLIENT_SECRET': 'test_secret',
+        'SCOPE': 'test_scope',
+        'ENVIRONMENT': 'staging',
+    })
+    def test_helseid_invalid_environment(self):
+        errors = check_helseid_settings(None)
+        self.assertTrue(any(e.id == 'helseid.E002_ENVIRONMENT' for e in errors))
 
     @override_settings()
     def test_helseid_setting_missing(self):

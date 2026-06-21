@@ -71,16 +71,7 @@ def auth(request):
         pass
 
     id_token = token.id_token
-
-    # NEXT: VERIFY ID_TOKEN
-    subject = id_token.subject
     auth_datetime = id_token.auth_datetime
-    given_name = id_token.get_claim("given_name")
-    family_name = id_token.get_claim("family_name")
-    middle_name = id_token.get_claim("middle_name")
-    hpr_number = id_token.get_claim("helseid://claims/hpr/hpr_number")
-
-    logger.debug(f"Auth Datetime: {auth_datetime}")
 
     user = authenticate(request, id_token_payload=id_token)
 

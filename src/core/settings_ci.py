@@ -66,8 +66,7 @@ HELSEID = {
     'CLIENT_ID': 'ci-dummy-client-id',
     'CLIENT_SECRET': {'kty': 'EC', 'crv': 'P-256'},
     'SCOPE': ['openid', 'profile'],
-    'SERVER_METADATA_URL': 'https://example.com/.well-known/openid-configuration',
-    'USE_DUMMY_SERVER_METADATA': False,
+    'ENVIRONMENT': 'test',
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

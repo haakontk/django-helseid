@@ -145,7 +145,7 @@ HELSEID = {
     'CLIENT_ID': env('HELSEID_CLIENT_ID'),
     'CLIENT_SECRET': get_helseid_private_key(),
     'SCOPE': ['openid', 'profile', 'helseid://scopes/hpr/hpr_number', 'helseid://scopes/identity/security_level'],
+    'ENVIRONMENT': env('HELSEID_ENVIRONMENT', default='test'),  # 'test' or 'production'
     'DUMMY_SERVER_METADATA_PATH': BASE_DIR.parent / 'dummy_server_metadata.json',
-    'SERVER_METADATA_URL': "https://helseid-sts.test.nhn.no/.well-known/openid-configuration",
-    'USE_DUMMY_SERVER_METADATA': False
+    'USE_DUMMY_SERVER_METADATA': False,
 }

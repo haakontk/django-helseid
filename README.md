@@ -39,10 +39,20 @@ Django application for authenticating users with HelseID
    ```python
    HELSEID = {
        'CLIENT_ID': 'your-client-id',
-       'CLIENT_SECRET': { ... }, # JWK dict (private key)
+       'CLIENT_SECRET': { ... },  # JWK dict (private key)
        'SCOPE': ['openid', 'profile', ...],
-       'SERVER_METADATA_URL': "https://helseid-sts.test.nhn.no/.well-known/openid-configuration",
-       'LOGIN_REDIRECT_URL': '/',  # where to send users after login
+       'ENVIRONMENT': 'production',  # 'test' or 'production'
+   }
+   ```
+   `ENVIRONMENT` sets the HelseID server URL and JWT audience automatically:
+   - `'test'` → `https://helseid-sts.test.nhn.no`
+   - `'production'` → `https://helseid-sts.nhn.no`
+
+   For non-standard deployments you can override the URL explicitly instead:
+   ```python
+   HELSEID = {
+       ...
+       'SERVER_METADATA_URL': 'https://helseid-sts.nhn.no/.well-known/openid-configuration',
    }
    ```
 
