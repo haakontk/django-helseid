@@ -1,12 +1,14 @@
 # django-helseid
 
+[![CI](https://github.com/haakontk/django-helseid/actions/workflows/ci.yml/badge.svg)](https://github.com/haakontk/django-helseid/actions/workflows/ci.yml)
+
 Django application for authenticating users with HelseID
 
 ## Installation
 
 **⚠️ WARNING: This project is currently under development and is NOT production-ready. It is intended for demonstration and testing purposes only. Do not use in a production environment without thorough security review and further development. ⚠️**
 
-
+**Requirements:** Python 3.12+, Django 6.0+
 
 1. Install the package:
    ```bash
@@ -37,8 +39,33 @@ Django application for authenticating users with HelseID
    ```python
    HELSEID = {
        'CLIENT_ID': 'your-client-id',
-       'CLIENT_SECRET': { ... }, # JWK dict
+       'CLIENT_SECRET': { ... },  # JWK dict (private key)
        'SCOPE': ['openid', 'profile', ...],
-       'SERVER_METADATA_URL': "https://helseid-sts.test.nhn.no/.well-known/openid-configuration",
+       'ENVIRONMENT': 'production',  # 'test' or 'production'
    }
    ```
+   `ENVIRONMENT` sets the HelseID server URL and JWT audience automatically:
+   - `'test'` → `https://helseid-sts.test.nhn.no`
+   - `'production'` → `https://helseid-sts.nhn.no`
+
+   For non-standard deployments you can override the URL explicitly instead:
+   ```python
+   HELSEID = {
+       ...
+       'SERVER_METADATA_URL': 'https://helseid-sts.nhn.no/.well-known/openid-configuration',
+   }
+   ```
+
+5. Include the URL configuration in your `urls.py`:
+   ```python
+   from django.urls import path, include
+
+   urlpatterns = [
+       ...
+       path('', include('helseid.urls')),
+   ]
+   ```
+   This registers the following routes:
+   - `GET /login/` — initiates the HelseID authentication flow
+   - `GET /authorize/` — handles the OAuth2 callback
+   - `GET /logout/` — clears the local session

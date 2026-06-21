@@ -6,6 +6,8 @@ from django.conf import settings
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_protect
 import datetime
 from .utils import get_helseid_client
 
@@ -69,26 +71,9 @@ def auth(request):
         pass
 
     id_token = token.id_token
-
-    # NEXT: VERIFY ID_TOKEN
-    subject = id_token.subject
     auth_datetime = id_token.auth_datetime
-    given_name = id_token.get_claim("given_name")
-    family_name = id_token.get_claim("family_name")
-    middle_name = id_token.get_claim("middle_name")
-    hpr_number = id_token.get_claim("helseid://claims/hpr/hpr_number")
-
-    logger.debug(f"Subject: {subject}")
-    logger.debug(f"Given Name: {given_name}")
-    logger.debug(f"Family Name: {family_name}")
-    logger.debug(f"Middle Name: {middle_name}")
-    logger.debug(f"HPR Number: {hpr_number}")
-    logger.debug(f"Auth Datetime: {auth_datetime}")
-
-
 
     user = authenticate(request, id_token_payload=id_token)
-    logger.debug(f"Authenticated user: {user}")
 
 
     if user:
@@ -105,6 +90,8 @@ def auth(request):
         return HttpResponse("Authentication failed.", status=403)
 
 
+@require_POST
+@csrf_protect
 def logout(request):
     # implement this later
     # client = get_helseid_client(request)
